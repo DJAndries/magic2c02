@@ -26,6 +26,7 @@ typedef struct {
 
   unsigned char* oam;
   unsigned char* secondary_oam;
+  unsigned char sec_oam_count;
 
   int scanline_count;
 
@@ -34,6 +35,10 @@ typedef struct {
   unsigned char* (*cpu_ma)(void*, unsigned short);
 
   magic2c02_register_info* register_info;
+
+  unsigned char* screen_output;
+  unsigned char* scanline_buffer;
+  void (*render)(unsigned char*);
 } magic2c02_ctx;
 
 #endif

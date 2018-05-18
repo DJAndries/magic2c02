@@ -20,7 +20,7 @@ void read_register_info(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   reginfo->vram_increment = (ppuctrl & 0x04) == 0x04 ? 32 : 1;
   reginfo->sprite_pattern_table_addr = (ppuctrl & 0x08) == 0x08 ? 0x1000 : 0x00;
   reginfo->background_pattern_table_addr = (ppuctrl & 0x10) == 0x10 ? 0x1000 : 0x00;
-  reginfo->sprite_size = (ppuctrl & 0x20) == 0x20 ? 1 : 0;
+  reginfo->sprite_size = (ppuctrl & 0x20) == 0x20 ? 16 : 8;
   reginfo->master_slave_select = (ppuctrl & 0x40) == 0x40 ? 1 : 0;
   reginfo->nmi_enabled = (ppuctrl & 0x80) == 0x80 ? 1 : 0;
 }

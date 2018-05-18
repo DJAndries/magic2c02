@@ -4,7 +4,7 @@
 
 __attribute__((visibility("default"))) \
 magic2c02_ctx* magic2c02_ctx(unsigned char* (*cpu_ma)(void*, unsigned short),
-void (*cpu_interrupt)(void*, char), void* cpu_ctx) {
+void (*cpu_interrupt)(void*, char), void* cpu_ctx, void (*render)(unsigned char*)) {
   magic2c02_ctx* ctx = (magic2c02_ctx*)malloc(sizeof(magic2c02_ctx));
   if (ctx == 0) {
     return 0;
@@ -14,12 +14,21 @@ void (*cpu_interrupt)(void*, char), void* cpu_ctx) {
 
   ctx->vm = (unsigned char*)malloc(sizeof(unsigned char) * 16384);
   ctx->oam = (unsigned char*)malloc(sizeof(unsigned char) * 256);
+  ctx->secondary_oam = (unsigned char*)malloc(sizeof(unsigned char) * 8 * 4);
+  ctx->screen_output = (unsigned char*)malloc(sizeof(unsigned char) * 256 * 240 * 3);
+  ctx->scanline_buffer = (unsigned char*)malloc(sizeof(unsigned char) * 256 * 3);
   ctx->register_info = (magic2c02_register_info*)malloc(sizeof(magic2c02_register_info));
+
+  memset(ctx->vm, 0, sizeof(unsigned char) * 16384);
+  memset(ctx->secondary_oam, 0xFF, sizeof(unsigned char) * 8);
+  memset(ctx->oam, 0, sizeof(unsigned char) * 256);
+  memset(ctx->scanline_buffer, 0, sizeof(unsigned char) * 256 * 3);
+  memset(ctx->register_info, 0, sizeof(magic2c02_register_info));
+
   ctx->cpu_ma = cpu_ma;
   ctx->cpu_interrupt = cpu_interrupt;
   ctx->cpu_ctx = cpu_ctx;
-
-  memset(ctx->register_info, 0, sizeof(magic2c02_register_info));
+  ctx->render = render;
 
   return ctx;
 }
@@ -37,5 +46,7 @@ __attribute__((visibility("default"))) void magic2c02_free(magic2c02_ctx* ctx) {
   free(ctx->vm);
   free(ctx->oam);
   free(ctx->register_info);
+  free(ctx->screen_output);
+  free(ctx->scanline_buffer);
   free(ctx);
 }
