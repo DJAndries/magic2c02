@@ -1,17 +1,18 @@
 #include "render.h"
-#include <stdlib.h>
+#include <string.h>
 #include "sprite.h"
 #include "background.h"
+#include "pattern_palette.h"
 
 void prerender(magic2c02_ctx* ctx) {
   ctx->register_info->sprite_overflow = 0;
   ctx->register_info->sprite_hit = 0;
-  ctx->register_info->vblank = 0;
+  ctx->register_info->v_blank = 0;
   ctx->scanline_count = 0;
 }
 
 void vblank_start(magic2c02_ctx* ctx) {
-  ctx->register_info->vblank = 1;
+  ctx->register_info->v_blank = 1;
   ctx->render(ctx->screen_output);
 }
 

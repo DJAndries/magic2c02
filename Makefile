@@ -13,10 +13,10 @@ obj/%.o: src/%.c
 	gcc -Wall -O -c $< -Iinclude -o $@
 
 lib/libmagic2c02.so: obj/magic2c02.o obj/registers.o obj/vram.o obj/background.o \
-	obj/render.o obj/registers.o obj/sprite.o obj/pattern_palette.o
+	obj/render.o obj/sprite.o obj/pattern_palette.o
 	gcc -fvisibility=hidden -shared -o ./lib/libmagic2c02.so obj/magic2c02.o \
 		obj/registers.o obj/vram.o obj/background.o \
-		obj/render.o obj/registers.o obj/sprite.o obj/pattern_palette.o
+		obj/render.o obj/sprite.o obj/pattern_palette.o
 
 lib:
 	mkdir lib

@@ -32,19 +32,18 @@ unsigned short x, unsigned short y) {
   addr = addr + ((y >= 240 ? y - 240 : y) / 8 * 32);
   /* Calculate x offset in address */
   addr = addr + ((x >= 256 ? x - 256 : x) / 8);
-  return *ma(ctx, addr)
+  return *ma(ctx, addr);
 }
 
 void render_bg_line(magic2c02_ctx* ctx) {
   /* TODO: check for sprite color in buffer before rendering default bg color */
   unsigned short tile_bank = ctx->register_info->background_pattern_table_addr;
-  unsigned short i, y, x, tile_number, tile_y_offset, tile_x_offset;
-  unsigned char tile_pixel_count;
-  unsigned short tile_number;
+  unsigned short i, y, x;
+  unsigned char tile_pixel_count, palette_index, tile_number, tile_y_offset, tile_x_offset;
   unsigned char* scanline_buffer = ctx->scanline_buffer;
 
-  y = ctx->scanline_count + ctx->y_scroll;
-  x = ctx->register_info->x_scroll;
+  y = ctx->scanline_count + ctx->register_info->scroll_y;
+  x = ctx->register_info->scroll_x;
   tile_y_offset = y % 8;
 
   for (i = 0; i < 256; i = i + tile_pixel_count) {
@@ -52,7 +51,7 @@ void render_bg_line(magic2c02_ctx* ctx) {
     palette_index = attribute_table_palette_index(ctx, x, y);
     if (i == 0) {
       /* Potential partial tile render, start of screen */
-      tile_x_offset = ctx->register_info->x_scroll % 8;
+      tile_x_offset = ctx->register_info->scroll_x % 8;
       tile_pixel_count = 8 - tile_x_offset;
     } else {
       /* Potential partial tile render, end of screen */

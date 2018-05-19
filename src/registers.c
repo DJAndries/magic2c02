@@ -10,7 +10,7 @@ void ppuctrl_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
     case 1:
       reginfo->base_nametable_addr = 0x2400;
       break;
-    case 2;
+    case 2:
       reginfo->base_nametable_addr = 0x2800;
       break;
     case 3:
@@ -80,9 +80,10 @@ unsigned char address) {
   reginfo->last_write_byte = *ctx->cpu_ma(ctx->cpu_ctx, address);
 }
 
-void update_ppustatus(magic2c02_ctx* ctx) {
-  unsigned char value = ctx->v_blank << 7 | ctx->sprite_hit << 6 |
-    ctx->sprite_overflow << 5 | (ctx->last_write_byte & 0x1F);
+void update_ppustatus(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
+  unsigned char value = reginfo->v_blank << 7 | reginfo->sprite_hit << 6 |
+    reginfo->sprite_overflow << 5 | (reginfo->last_write_byte & 0x1F);
+  *ctx->cpu_ma(ctx->cpu_ctx, 0x2002) = value;
 }
 
 void process_registers(magic2c02_ctx* ctx, unsigned short last_memory_access_addr) {
@@ -127,5 +128,5 @@ void process_registers(magic2c02_ctx* ctx, unsigned short last_memory_access_add
       break;
   }
 
-  update_ppustatus(ctx);
+  update_ppustatus(ctx, reginfo);
 }

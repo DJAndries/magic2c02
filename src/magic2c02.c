@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "render.h"
+#include "registers.h"
+
 __attribute__((visibility("default"))) \
-magic2c02_ctx* magic2c02_ctx(unsigned char* (*cpu_ma)(void*, unsigned short),
+magic2c02_ctx* magic2c02_init(unsigned char* (*cpu_ma)(void*, unsigned short),
 void (*cpu_interrupt)(void*, char), void* cpu_ctx, void (*render)(unsigned char*)) {
   magic2c02_ctx* ctx = (magic2c02_ctx*)malloc(sizeof(magic2c02_ctx));
   if (ctx == 0) {

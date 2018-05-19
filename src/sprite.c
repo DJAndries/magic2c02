@@ -1,18 +1,25 @@
 #include "sprite.h"
 #include "vram.h"
+#include "pattern_palette.h"
 
 void fill_secondary_oam(magic2c02_ctx* ctx) {
-  unsigned char i, y, sec_oam_count;
+  unsigned char i, y;
   ctx->sec_oam_count = 0;
   for (i = 0; i < 64; i += 1) {
     y = ctx->oam[i * 4];
+
+    /* If in range... */
     if (ctx->scanline_count < (y + ctx->register_info->sprite_size) &&
       ctx->scanline_count >= y) {
-      if (sec_oam_count < 8) {
-        ctx->secondary_oam[sec_oam_count] = i;
-        sec_oam_count++;
+
+      /* ... and if oam not full */
+      if (ctx->sec_oam_count < 8) {
+
+        ctx->secondary_oam[ctx->sec_oam_count] = i;
+        ctx->sec_oam_count++;
+
       } else {
-        /* TODO: set sprite overflow flag */
+        ctx->register_info->sprite_overflow = 1;
       }
     }
   }
@@ -25,8 +32,8 @@ void render_sprite_scanline(magic2c02_ctx* ctx, unsigned char is_behind_bg) {
   unsigned char i, palette_index, behind_bg, y, x, tile_index, tile_y, pixel_count, sprite_indicator;
   unsigned char* scanline_buffer;
   for (i = 0; i < ctx->sec_oam_count; i += 1) {
-    oam_sprite = ctx->oam + (ctx->secondary_oam[i] * 4)
-    behind_bg = (*(oam_sprite + 2) & 0x20) ? 1 : 0
+    oam_sprite = ctx->oam + (ctx->secondary_oam[i] * 4);
+    behind_bg = (*(oam_sprite + 2) & 0x20) ? 1 : 0;
     if (behind_bg != is_behind_bg) {
       continue;
     }

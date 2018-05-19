@@ -61,7 +61,7 @@ unsigned char offset_y, unsigned char pixel_count, unsigned char** scanline_buff
 void convert_buffer_to_rgb(magic2c02_ctx* ctx, unsigned char* output) {
   int i;
   unsigned char* buffer = ctx->scanline_buffer;
-  unsigned char* color_rgb;
+  const unsigned char* color_rgb;
   unsigned char is_sprite, palette_index, color_index;
   unsigned short palette_base, color_address;
   for (i = 0; i < 256; i += 1) {
