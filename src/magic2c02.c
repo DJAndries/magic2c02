@@ -7,7 +7,7 @@
 
 __attribute__((visibility("default"))) \
 magic2c02_ctx* magic2c02_init(unsigned char* (*cpu_ma)(void*, unsigned short),
-void (*cpu_interrupt)(void*, char), void* cpu_ctx, void (*render)(unsigned char*)) {
+void (*cpu_interrupt)(void*), void* cpu_ctx, void (*render)(void*, unsigned char*)) {
   magic2c02_ctx* ctx = (magic2c02_ctx*)malloc(sizeof(magic2c02_ctx));
   if (ctx == 0) {
     return 0;
@@ -24,6 +24,7 @@ void (*cpu_interrupt)(void*, char), void* cpu_ctx, void (*render)(unsigned char*
 
   memset(ctx->vm, 0, sizeof(unsigned char) * 16384);
   memset(ctx->oam, 0, sizeof(unsigned char) * 256);
+  memset(ctx->screen_output, 0, sizeof(unsigned char) * 256 * 240 * 3);
   memset(ctx->scanline_buffer, 0, sizeof(unsigned char) * 256 * 3);
   memset(ctx->register_info, 0, sizeof(magic2c02_register_info));
 
@@ -33,6 +34,7 @@ void (*cpu_interrupt)(void*, char), void* cpu_ctx, void (*render)(unsigned char*
   ctx->render = render;
   /* Start at pre-render scanline */
   ctx->scanline_count = 261;
+  ctx->register_info->sprite_size = 8;
 
   return ctx;
 }

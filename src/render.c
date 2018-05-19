@@ -8,12 +8,19 @@ void prerender(magic2c02_ctx* ctx) {
   ctx->register_info->sprite_overflow = 0;
   ctx->register_info->sprite_hit = 0;
   ctx->register_info->v_blank = 0;
+  ctx->interrupt_sent = 0;
   ctx->scanline_count = 0;
 }
 
-void vblank_start(magic2c02_ctx* ctx) {
-  ctx->register_info->v_blank = 1;
-  ctx->render(ctx->screen_output);
+void vblank(magic2c02_ctx* ctx) {
+  if (ctx->scanline_count == 241) {
+    ctx->register_info->v_blank = 1;
+    ctx->render(ctx->cpu_ctx, ctx->screen_output);
+  }
+  if (ctx->register_info->nmi_enabled && !ctx->interrupt_sent) {
+    ctx->cpu_interrupt(ctx->cpu_ctx);
+    ctx->interrupt_sent = 1;
+  }
 }
 
 void visible(magic2c02_ctx* ctx) {
@@ -32,9 +39,10 @@ void visible(magic2c02_ctx* ctx) {
 void render_scanline(magic2c02_ctx* ctx) {
   if (ctx->scanline_count == 261) {
     prerender(ctx);
-  } else if (ctx->scanline_count == 241) {
-    vblank_start(ctx);
+  } else if (ctx->scanline_count > 240 && ctx->scanline_count <= 260) {
+    vblank(ctx);
   } else if (ctx->scanline_count < 240) {
     visible(ctx);
   }
+  ctx->scanline_count += 1;
 }

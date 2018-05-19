@@ -36,14 +36,15 @@ typedef struct {
   unsigned short scanline_count;
 
   void* cpu_ctx;
-  void (*cpu_interrupt)(void*, char);
+  void (*cpu_interrupt)(void*);
+  unsigned char interrupt_sent;
   unsigned char* (*cpu_ma)(void*, unsigned short);
 
   magic2c02_register_info* register_info;
 
   unsigned char* screen_output;
   unsigned char* scanline_buffer;
-  void (*render)(unsigned char*);
+  void (*render)(void*, unsigned char*);
 } magic2c02_ctx;
 
 #endif
