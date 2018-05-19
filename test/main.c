@@ -5,6 +5,7 @@
 
 #include "magic2c02.h"
 #include "test_struct.h"
+#include "ppu_registers.h"
 
 void render(void* tctx, unsigned char* screen_output) {
   int pitch = 256 * 3;
@@ -17,29 +18,26 @@ void render(void* tctx, unsigned char* screen_output) {
   SDL_RenderClear(ttctx->renderer);
   SDL_RenderCopy(ttctx->renderer, ttctx->buffer, NULL, NULL);
   SDL_RenderPresent(ttctx->renderer);
+  SDL_Delay(200);
 }
 
 void cpu_interrupt(void* tctx) {
-
+  ((test_ctx*)tctx)->scroll += 1;
+  ((test_ctx*)tctx)->sprite_0_position += 1;
+  adjust_scroll((test_ctx*)tctx);
 }
 
 unsigned char* cpu_memory_access(void* tctx, unsigned short addr) {
   return &((test_ctx*)tctx)->cpu_memory[addr];
 }
 
-void init_ppu_registers(magic2c02_ctx* ctx, test_ctx* tctx) {
-  tctx->cpu_memory[0x2006] = 0x3F;
-  magic2c02_process_registers(ctx, 0x2006);
-  tctx->cpu_memory[0x2006] = 0x00;
-  magic2c02_process_registers(ctx, 0x2006);
-  tctx->cpu_memory[0x2007] = 0x03;
-  magic2c02_process_registers(ctx, 0x2007);
-}
-
 int main(int argc, char** argv) {
+  unsigned int total_scanline_count;
   SDL_Window* win;
   test_ctx* tctx = (test_ctx*)malloc(sizeof(test_ctx));
-  magic2c02_ctx* ctx = magic2c02_init(cpu_memory_access, cpu_interrupt, tctx, render);
+  SDL_Event e;
+  tctx->ctx = magic2c02_init(cpu_memory_access, cpu_interrupt, tctx, render);
+  tctx->scroll = 0;
 
   tctx->cpu_memory = (unsigned char*)malloc(sizeof(unsigned char) * 0x10000);
   memset(tctx->cpu_memory, 0, 0x10000);
@@ -57,18 +55,19 @@ int main(int argc, char** argv) {
   tctx->buffer = SDL_CreateTexture(tctx->renderer, SDL_PIXELFORMAT_RGB24,
     SDL_TEXTUREACCESS_STREAMING, 256, 240);
 
-  printf("init\n");
-  magic2c02_process_registers(ctx, 0);
-  printf("init2\n");
-  init_ppu_registers(ctx, tctx);
+  magic2c02_process_registers((void*)tctx->ctx, 0);
+  init_ppu_registers(tctx);
 
-  while(1) {
-    printf("scanline\n");
-    magic2c02_render_scanline(ctx);
+  for(total_scanline_count = 0; total_scanline_count < 1000000; total_scanline_count++) {
+    magic2c02_render_scanline(tctx->ctx);
+    SDL_PollEvent( &e );
   }
 
   SDL_DestroyTexture(tctx->buffer);
   SDL_DestroyRenderer(tctx->renderer);
   SDL_DestroyWindow(win);
+
+  magic2c02_free(tctx->ctx);
+  free(tctx);
   return 0;
 }

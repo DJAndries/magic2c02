@@ -44,11 +44,15 @@ void render_sprite_scanline(magic2c02_ctx* ctx, unsigned char is_behind_bg) {
       tile_index++;
       tile_y -= 8;
     }
-    tile_bank = (*(oam_sprite + 1) & 0x01) ? 0x1000 : 0x00;
+    if (ctx->register_info->sprite_size == 16) {
+      tile_bank = (*(oam_sprite + 1) & 0x01) ? 0x1000 : 0x00;
+    } else {
+      tile_bank = ctx->register_info->sprite_pattern_table_addr;
+    }
     palette_index = *(oam_sprite + 2) & 0x03;
     x = *(oam_sprite + 3);
     pixel_count = (x + 8) > 256 ? 256 - x : 8;
-    scanline_buffer = ctx->scanline_buffer + x;
+    scanline_buffer = ctx->scanline_buffer + (x * 3);
     /* Indicate that this is sprite 0 (for sprint hit detection) */
     sprite_indicator = i == 0 ? 0x03 : 0x01;
 

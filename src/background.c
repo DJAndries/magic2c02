@@ -56,7 +56,7 @@ void render_bg_line(magic2c02_ctx* ctx) {
     } else {
       /* Potential partial tile render, end of screen */
       tile_x_offset = 0;
-      tile_pixel_count = ((i + 8) > 256) ? (256 - i) : i;
+      tile_pixel_count = ((i + 8) > 256) ? (256 - i) : 8;
     }
 
     render_pattern_line(ctx, 0, tile_number, tile_bank, palette_index, tile_x_offset,

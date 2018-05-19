@@ -37,17 +37,16 @@ unsigned char offset_y, unsigned char pixel_count, unsigned char** scanline_buff
 
   for (i = offset_x; i < (offset_x + pixel_count); i += 1) {
 
-    first_bit_shift = pixel_count - offset_x - 1;
-    second_bit_shift = pixel_count - offset_x - 2;
+    first_bit_shift = pixel_count - i - 1;
+    second_bit_shift = pixel_count - i - 2;
 
     color_index = ((*first_plane >> first_bit_shift) & 0x01) |
       ((*second_plane >> second_bit_shift) & 0x02);
 
     /* Render bg if no existing pixel, or render sprite if non-zero pixel */
-    if ((is_sprite == 0 && *(*scanline_buffer + 2) != 0x00)
+    if ((is_sprite == 0 && *(*scanline_buffer + 2) == 0x00)
       || (is_sprite && color_index != 0)) {
       detect_sprite_hit(ctx, *scanline_buffer, is_sprite, color_index);
-
       **scanline_buffer = is_sprite;
       *(*scanline_buffer + 1) = palette_index;
       *(*scanline_buffer + 2) = color_index;
@@ -68,6 +67,7 @@ void convert_buffer_to_rgb(magic2c02_ctx* ctx, unsigned char* output) {
     is_sprite = *buffer;
     palette_index = *(buffer + 1);
     color_index = *(buffer + 2);
+
 
     palette_base = is_sprite ? sprite_palette_bases[palette_index] :
       bg_palette_bases[palette_index];
