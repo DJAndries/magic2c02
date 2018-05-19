@@ -19,6 +19,11 @@ typedef struct {
 
   unsigned short ppuaddr;
   unsigned char ppuaddr_is_low_input;
+
+  unsigned char sprite_hit;
+  unsigned char sprite_overflow;
+  unsigned char v_blank;
+  unsigned char last_write_byte;
 } magic2c02_register_info;
 
 typedef struct {
@@ -28,7 +33,7 @@ typedef struct {
   unsigned char* secondary_oam;
   unsigned char sec_oam_count;
 
-  int scanline_count;
+  unsigned short scanline_count;
 
   void* cpu_ctx;
   void (*cpu_interrupt)(void*, char);

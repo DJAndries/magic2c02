@@ -1,4 +1,5 @@
 #include "background.h"
+#include "vram.h"
 #include "pattern_palette.h"
 
 unsigned char attribute_table_palette_index(magic2c02_ctx* ctx,
@@ -62,6 +63,6 @@ void render_bg_line(magic2c02_ctx* ctx) {
     render_pattern_line(ctx, 0, tile_number, tile_bank, palette_index, tile_x_offset,
       tile_y_offset, tile_pixel_count, &scanline_buffer);
 
-    x = x + tile_pixel_count;
+    x += tile_pixel_count;
   }
 }

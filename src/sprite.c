@@ -1,18 +1,16 @@
 #include "sprite.h"
-#include <string.h>
+#include "vram.h"
 
 void fill_secondary_oam(magic2c02_ctx* ctx) {
   unsigned char i, y, sec_oam_count;
   ctx->sec_oam_count = 0;
-  memset(ctx->secondary_oam, 0xFF, sizeof(unsigned char) * 8 * 4);
   for (i = 0; i < 64; i += 1) {
     y = ctx->oam[i * 4];
     if (ctx->scanline_count < (y + ctx->register_info->sprite_size) &&
       ctx->scanline_count >= y) {
       if (sec_oam_count < 8) {
-        /* copy this one, it's in the scanline */
-        memcpy(ctx->secondary_oam + (sec_oam_count * 4), ctx->oam + (i * 4), 4);
-        sec_oam_count = sec_oam_count + 1;
+        ctx->secondary_oam[sec_oam_count] = i;
+        sec_oam_count++;
       } else {
         /* TODO: set sprite overflow flag */
       }
@@ -22,15 +20,32 @@ void fill_secondary_oam(magic2c02_ctx* ctx) {
 
 void render_sprite_scanline(magic2c02_ctx* ctx, unsigned char is_behind_bg) {
   /* TODO: implement sprite flipping */
-  unsigned char i, palette_index, behind_bg, y, x, tile_index, tile_bank;
+  unsigned short tile_bank;
+  unsigned char* oam_sprite;
+  unsigned char i, palette_index, behind_bg, y, x, tile_index, tile_y, pixel_count, sprite_indicator;
+  unsigned char* scanline_buffer;
   for (i = 0; i < ctx->sec_oam_count; i += 1) {
-    behind_bg = (ctx->secondary_oam[i * 4 + 2] & 0x20) ? 1 : 0
+    oam_sprite = ctx->oam + (ctx->secondary_oam[i] * 4)
+    behind_bg = (*(oam_sprite + 2) & 0x20) ? 1 : 0
     if (behind_bg != is_behind_bg) {
       continue;
     }
-    y = ctx->secondary_oam[i * 4];
-    tile_index = ctx->secondary_oam[i * 4 + 1] >> 1;
-    tile_bank = (ctx->secondary_oam[i * 4 + 1] & 0x01) ? 0x1000 : 0x00;
-    palette_index = ctx->secondary_oam[i * 4 + 2] & 0x03;
+    y = *oam_sprite;
+    tile_y = ctx->scanline_count - y;
+    tile_index = *(oam_sprite + 1) >> 1;
+    if (tile_y >= 8) {
+      tile_index++;
+      tile_y -= 8;
+    }
+    tile_bank = (*(oam_sprite + 1) & 0x01) ? 0x1000 : 0x00;
+    palette_index = *(oam_sprite + 2) & 0x03;
+    x = *(oam_sprite + 3);
+    pixel_count = (x + 8) > 256 ? 256 - x : 8;
+    scanline_buffer = ctx->scanline_buffer + x;
+    /* Indicate that this is sprite 0 (for sprint hit detection) */
+    sprite_indicator = i == 0 ? 0x03 : 0x01;
+
+    render_pattern_line(ctx, sprite_indicator, tile_index, tile_bank, palette_index, 0,
+      tile_y, pixel_count, &scanline_buffer);
   }
 }

@@ -1,4 +1,5 @@
 #include "pattern_palette.h"
+#include "vram.h"
 #include "colors.h"
 
 #define UNI_BG_COLOR_ADDR 0x3F00
@@ -10,6 +11,18 @@ const unsigned short bg_palette_bases[4] = {
 const unsigned short sprite_palette_bases[4] = {
   0x3F11, 0x3F15, 0x3F19, 0x3F1D
 };
+
+void detect_sprite_hit(magic2c02_ctx* ctx, unsigned char* scanline_pixel,
+unsigned char is_sprite, unsigned char color_index) {
+  /* If not rendering bg, and existing pixel is from sprite 0.
+     If not rendering sprite 0 and existing pixel is from bg. */
+  if ((!is_sprite && *scanline_pixel == 0x03) || (is_sprite == 0x03 && *scanline_pixel == 0x00)) {
+    /* if existing and new pixels are non-zero */
+    if (*(scanline_pixel + 2) != 0x00 && color_index != 0x00) {
+      ctx->register_info->sprite_hit = 1;
+    }
+  }
+}
 
 void render_pattern_line(magic2c02_ctx* ctx, unsigned char is_sprite, unsigned char tile_index,
 unsigned short tile_bank, unsigned char palette_index, unsigned char offset_x,
@@ -30,8 +43,11 @@ unsigned char offset_y, unsigned char pixel_count, unsigned char** scanline_buff
     color_index = ((*first_plane >> first_bit_shift) & 0x01) |
       ((*second_plane >> second_bit_shift) & 0x02);
 
-    /* Render color index 0 only if bg */
-    if (is_sprite == 0 || color_index != 0) {
+    /* Render bg if no existing pixel, or render sprite if non-zero pixel */
+    if ((is_sprite == 0 && *(*scanline_buffer + 2) != 0x00)
+      || (is_sprite && color_index != 0)) {
+      detect_sprite_hit(ctx, *scanline_buffer, is_sprite, color_index);
+
       **scanline_buffer = is_sprite;
       *(*scanline_buffer + 1) = palette_index;
       *(*scanline_buffer + 2) = color_index;

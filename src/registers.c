@@ -1,7 +1,8 @@
 #include "registers.h"
+#include "vram.h"
 #include <string.h>
 
-void read_register_info(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
+void ppuctrl_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   unsigned char ppuctrl = *ctx->cpu_ma(ctx->cpu_ctx, 0x2000);
 
   reginfo->base_nametable_addr = 0x2000;
@@ -29,6 +30,7 @@ void ppustatus_read(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   *ctx->cpu_ma(ctx->cpu_ctx, 0x2002) = *ctx->cpu_ma(ctx->cpu_ctx, 0x2002) & 0x7F;
   reginfo->scroll_is_y_input = 0;
   reginfo->ppuaddr_is_low_input = 0;
+  reginfo->v_blank = 0;
 }
 
 void oamaddr_write(magic2c02_ctx* ctx) {
@@ -62,7 +64,7 @@ void ppuaddr_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
 }
 
 void ppudata_access(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
-  *ma(ctx, reginfo->ppuaddr) = *cpu->cpu_ma(ctx->cpu_ctx, 0x2007);
+  *ma(ctx, reginfo->ppuaddr) = *ctx->cpu_ma(ctx->cpu_ctx, 0x2007);
   reginfo->ppuaddr = reginfo->ppuaddr + reginfo->vram_increment;
 }
 
@@ -73,12 +75,27 @@ void oamdma_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   memcpy(ctx->oam + oam_addr, page_start, 256 - oam_addr);
 }
 
+void update_last_write_byte(magic2c02_ctx* ctx, magic2c02_register_info* reginfo,
+unsigned char address) {
+  reginfo->last_write_byte = *ctx->cpu_ma(ctx->cpu_ctx, address);
+}
+
+void update_ppustatus(magic2c02_ctx* ctx) {
+  unsigned char value = ctx->v_blank << 7 | ctx->sprite_hit << 6 |
+    ctx->sprite_overflow << 5 | (ctx->last_write_byte & 0x1F);
+}
+
 void process_registers(magic2c02_ctx* ctx, unsigned short last_memory_access_addr) {
   magic2c02_register_info* reginfo = ctx->register_info;
 
+  /* update last write byte if writable register */
+  if (last_memory_access_addr != 0x2001 && last_memory_access_addr != 0x2002) {
+    update_last_write_byte(ctx, reginfo, last_memory_access_addr);
+  }
+
   switch (last_memory_access_addr) {
     case 0x2000:
-      read_register_info(ctx, reginfo);
+      ppuctrl_write(ctx, reginfo);
       break;
     case 0x2001:
       /* Not implemented */
@@ -109,4 +126,6 @@ void process_registers(magic2c02_ctx* ctx, unsigned short last_memory_access_add
       oamdma_write(ctx, reginfo);
       break;
   }
+
+  update_ppustatus(ctx);
 }
