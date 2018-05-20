@@ -9,7 +9,6 @@ void prerender(magic2c02_ctx* ctx) {
   ctx->register_info->sprite_hit = 0;
   ctx->register_info->v_blank = 0;
   ctx->interrupt_sent = 0;
-  ctx->scanline_count = 0;
 }
 
 void vblank(magic2c02_ctx* ctx) {
@@ -44,5 +43,5 @@ void render_scanline(magic2c02_ctx* ctx) {
   } else if (ctx->scanline_count < 240) {
     visible(ctx);
   }
-  ctx->scanline_count += 1;
+  ctx->scanline_count = ctx->scanline_count == 261 ? 0 : ctx->scanline_count + 1;
 }

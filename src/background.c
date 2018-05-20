@@ -53,6 +53,7 @@ void render_bg_line(magic2c02_ctx* ctx) {
       /* Potential partial tile render, start of screen */
       tile_x_offset = ctx->register_info->scroll_x % 8;
       tile_pixel_count = 8 - tile_x_offset;
+
     } else {
       /* Potential partial tile render, end of screen */
       tile_x_offset = 0;

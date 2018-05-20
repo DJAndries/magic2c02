@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
   test_ctx* tctx = (test_ctx*)malloc(sizeof(test_ctx));
   SDL_Event e;
   tctx->ctx = magic2c02_init(cpu_memory_access, cpu_interrupt, tctx, render);
-  tctx->scroll = 0;
+  tctx->scroll = 2;
 
   tctx->cpu_memory = (unsigned char*)malloc(sizeof(unsigned char) * 0x10000);
   memset(tctx->cpu_memory, 0, 0x10000);

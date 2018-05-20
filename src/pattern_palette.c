@@ -37,8 +37,8 @@ unsigned char offset_y, unsigned char pixel_count, unsigned char** scanline_buff
 
   for (i = offset_x; i < (offset_x + pixel_count); i += 1) {
 
-    first_bit_shift = pixel_count - i - 1;
-    second_bit_shift = pixel_count - i - 2;
+    first_bit_shift = 8 - i - 1;
+    second_bit_shift = 8 - i - 2;
 
     color_index = ((*first_plane >> first_bit_shift) & 0x01) |
       ((*second_plane >> second_bit_shift) & 0x02);
