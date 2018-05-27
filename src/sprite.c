@@ -39,12 +39,13 @@ void render_sprite_scanline(magic2c02_ctx* ctx, unsigned char is_behind_bg) {
     }
     y = *oam_sprite;
     tile_y = ctx->scanline_count - y;
-    tile_index = *(oam_sprite + 1) >> 1;
+    tile_index = *(oam_sprite + 1);
     if (tile_y >= 8) {
       tile_index++;
       tile_y -= 8;
     }
     if (ctx->register_info->sprite_size == 16) {
+      tile_index = tile_index & 0xFE;
       tile_bank = (*(oam_sprite + 1) & 0x01) ? 0x1000 : 0x00;
     } else {
       tile_bank = ctx->register_info->sprite_pattern_table_addr;

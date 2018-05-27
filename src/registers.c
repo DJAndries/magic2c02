@@ -66,12 +66,13 @@ void ppuaddr_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
 void ppudata_access(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   *ma(ctx, reginfo->ppuaddr) = *ctx->cpu_ma(ctx->cpu_ctx, 0x2007);
   reginfo->ppuaddr = reginfo->ppuaddr + reginfo->vram_increment;
+  *ctx->cpu_ma(ctx->cpu_ctx, 0x2007) = *ma(ctx, reginfo->ppuaddr);
 }
 
 void oamdma_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   unsigned char oam_addr = *ctx->cpu_ma(ctx->cpu_ctx, 0x2003);
-  unsigned char page_high = *ma(ctx, 0x4014);
-  unsigned char* page_start = ma(ctx, page_high << 8);
+  unsigned char page_high = *ctx->cpu_ma(ctx->cpu_ctx, 0x4014);
+  unsigned char* page_start = ctx->cpu_ma(ctx->cpu_ctx, page_high << 8);
   memcpy(ctx->oam + oam_addr, page_start, 256 - oam_addr);
 }
 

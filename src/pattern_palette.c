@@ -40,8 +40,12 @@ unsigned char offset_y, unsigned char pixel_count, unsigned char** scanline_buff
     first_bit_shift = 8 - i - 1;
     second_bit_shift = 8 - i - 2;
 
-    color_index = ((*first_plane >> first_bit_shift) & 0x01) |
-      ((*second_plane >> second_bit_shift) & 0x02);
+    color_index = (*first_plane >> first_bit_shift) & 0x01;
+    if (second_bit_shift >= 0) {
+      color_index |= (*second_plane >> second_bit_shift) & 0x02;
+    } else {
+      color_index |= (*second_plane << -second_bit_shift) & 0x02;
+    }
 
     /* Render bg if no existing pixel, or render sprite if non-zero pixel */
     if ((is_sprite == 0 && *(*scanline_buffer + 2) == 0x00)
