@@ -14,5 +14,5 @@ unsigned char* ma(magic2c02_ctx* ctx, unsigned short addr) {
     final_addr -= 0x800;
   }
 
-  return &ctx->vm[final_addr];
+  return &ctx->vm[final_addr % 0x4000];
 }
