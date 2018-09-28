@@ -65,7 +65,7 @@ void ppuaddr_write(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
 
 void ppudata_access(magic2c02_ctx* ctx, magic2c02_register_info* reginfo) {
   *ma(ctx, reginfo->ppuaddr) = *ctx->cpu_ma(ctx->cpu_ctx, 0x2007);
-  reginfo->ppuaddr = reginfo->ppuaddr + reginfo->vram_increment;
+  reginfo->ppuaddr = (reginfo->ppuaddr + reginfo->vram_increment) % 0x4000;
   *ctx->cpu_ma(ctx->cpu_ctx, 0x2007) = *ma(ctx, reginfo->ppuaddr);
 }
 
